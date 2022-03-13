@@ -136,7 +136,7 @@ unset __conda_setup
 a=`ls -1 ~/colorscripts/ | sort -R | head -1`
 color="~/colorscripts/${a}"
 # exec $("/home/laurents/colorscripts/${a}")
-~/colorscripts/square.textart
+~/colorscripts/crunchbang-mini.textart
 eval "$(pyenv init -)"
 eval "$(zoxide init zsh)"
 alias topdf='jupyter nbconvert --to webpdf --no-input'
