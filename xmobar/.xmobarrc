@@ -1,0 +1,50 @@
+Config { 
+  font = "xft: Iosevka Term:bold:size=10:antialias=true"
+    , additionalFonts = ["xft: FontAwesome:regular:size=11:antialias=true"]
+    , borderColor = "black"
+    , border = NoBorder
+    , bgColor = "#54372d"
+    , fgColor = "#a8bf41"
+    , alpha = 255
+    , position = Top
+    , textOffset = -3
+    , iconOffset = -1
+    , lowerOnStart = False
+    , pickBroadest = False
+    , persistent = False
+    , hideOnStart = False
+    , iconRoot = "."
+    , allDesktops = True
+    , overrideRedirect = True
+    , commands = [ Run Weather "RPVA" ["-t","<station>: <tempC> C",
+    "-L","18","-H","25",
+    "--normal","#11ed74",
+    "--high","#f56c42",
+    "--low","#4cd49b"] 36000
+      , Run Cpu ["-L","3","-H","50",
+    "--normal","#11ed74","--high","#f56c42"] 10
+      , Run Memory ["-t","<fn=1></fn> <usedratio>%"] 10
+      , Run Swap [] 10
+      , Run Date "<fn=1></fn> %a %b %_d  <fn=1></fn> %H:%M" "date" 10
+      , Run Wireless "wlan0" ["-t", "<fn=1></fn> <qualitybar>"] 10
+      , Run UnsafeStdinReader
+      , Run Battery        [ "--template" , "<acstatus>"
+                           , "--Low"      , "10"        -- units: %
+                           , "--High"     , "80"        -- units: %
+                           , "--low"      , "#eb4934"
+                           , "--normal"   , "#ee9a00"
+                           , "--high"     , "#a8bf41"
+
+                           , "--" -- battery specific options
+                                     -- discharging status
+                                     , "-o"	, " <left>% (<timeleft>)"
+                                     -- AC "on" status
+                                     , "-O"	, " <fc=#dAA520>Charging</fc>"
+                                     -- charged status
+                                     , "-i"	, " <fc=#ebbd34>Charged</fc>"
+                           ] 50
+    ]
+    , sepChar = "%"
+    , alignSep = "}{"
+    , template = " %battery% | %memory% | %wlan0wi% | <fc=#ee9a00>%date%</fc> }{ %UnsafeStdinReader% "
+}

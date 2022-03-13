@@ -1,0 +1,89 @@
+window {
+  background-color: #362c1e;
+  width: 451;
+  height: 359;
+  border: 0;
+  font: "Comfortaa 18px";
+}
+
+mainbox {
+  background-color: #362c1e;
+  padding: 0;
+}
+
+scrollbar {
+  enabled: false;
+}
+
+inputbar {
+  background-image: url("~/Pictures/brownpattern1.jpg");
+  padding: 55 20 25;
+  spacing: 0;
+}
+
+prompt {
+  enabled: false;
+  padding: 15 10;
+  content: "";
+}
+
+entry {
+  padding: 15 30;
+  border-radius: 15;
+  horizontal-align: 0.5;
+  text-color: #362c1e;
+}
+
+case-indicator {
+  enabled: false;
+}
+
+message {
+  enabled: false;
+}
+
+message textbox {
+  enabled: false;
+}
+
+num-filtered-rows {
+  enabled: false;
+}
+
+box {
+  background-color: #fffffd;
+  border-radius: 15;
+  padding:  10 36 10 10;
+  spacing: 15;
+  text-color: #000000;
+}
+
+listview {
+  background-color: #362c1e;
+  margin: 15 23 36 23;
+  padding: 0;
+}
+
+element {
+  background-color: #362c1e;
+  border-radius: 12;
+  padding: 0 5;
+}
+
+element-icon {
+  background-color: inherit;
+  size: 36;
+}
+
+element-text {
+  background-color: inherit;
+  text-color: #ffffff;
+  margin: 10;
+  vertical-align: 0.5;
+  highlight: none;
+}
+
+element.selected {
+  background-color: #736A3B;
+  highlight: bold;
+}

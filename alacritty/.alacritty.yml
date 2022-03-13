@@ -1,0 +1,44 @@
+window:
+  padding:
+    x: 15
+    y: 15
+font:
+  normal:
+    family: Monofur Nerd Font
+    x: 1
+    y: 3
+  size: 12.0
+
+colors:
+  # Default colors
+  primary:
+    background: '0x271e17'
+    foreground: '0xe0d9a2'
+
+  # Normal colors
+  normal:
+    black:   '0x131820'
+    red:     '0xe74343'
+    green:   '0x9da92c'
+    yellow:  '0xe2650f'
+    blue:    '0x50a57a'
+    magenta: '0x8a7092'
+    cyan:    '0x386f90'
+    white:   '0x678357'
+
+  # Bright colors
+  bright:
+    black:   '0x3d4c5a'
+    red:     '0xcc6666'
+    green:   '0xb2be39'
+    yellow:  '0xffba34'
+    blue:    '0x53c592'
+    magenta: '0xb294bb'
+    cyan:    '0x7483bc'
+    white:   '0xafbf8c'
+
+mouse_bindings:
+  - { mouse: Middle, action: Paste }
+  - { mouse: Right, action: Copy }
+
+startup_mode: Maximized
