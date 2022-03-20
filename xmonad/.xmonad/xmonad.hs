@@ -105,7 +105,8 @@ myHiddenWs = xmobarColor "#668a4c" "#b5ae45" . wrap " [" "] "
 myHiddenNoWindowsWs = xmobarColor "#695b43" "#54372d" .wrap "[" "]"
 
 myKeyBindings =
-        [ ((mod1Mask, xK_p), spawn "rofi -show drun")
+        [ ((mod1Mask, xK_f), spawn "rofi -show drun")
+        , ((mod1Mask, xK_p), spawn "rofi-pass")
         , ((mod1Mask, xK_s), spawn "slock")
         , ((mod1Mask, xK_c), scratchpadSpawnActionTerminal "alacritty -t nvim ~/PriorityChecklist.org")
         , ((mod1Mask, xK_Tab), moveTo Next NonEmptyWS)

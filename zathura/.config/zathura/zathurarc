@@ -3,3 +3,4 @@ set recolor-keephue
 set recolor-lightcolor \#271e17
 set recolor-darkcolor \#ffffaf
 set default-bg \#271e17
+set guioptions ""
