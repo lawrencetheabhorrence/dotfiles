@@ -1,5 +1,5 @@
 configuration {
-	modi: "window,run,drun,filebrowser";
+	modi: "run,drun,filebrowser";
 	font: "Comfortaa 12";
 /*	location: 0;*/
 /*	yoffset: 0;*/

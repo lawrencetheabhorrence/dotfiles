@@ -144,3 +144,6 @@ alias cleanattendee='sed "1,/^Attendee Details,$/d"'
 function getpanelists () {
   tac $1 | sed "1,/^Attendee Details,$/d" | tac | sed "1,/^Panelist Details,$/d"
 }
+export QT_STYLE_OVERRIDE=kvantum
+gsettings set org.gnome.desktop.interface gtk-theme "Ant"
+gsettings set org.gnome.desktop.wm.preferences theme "Ant"

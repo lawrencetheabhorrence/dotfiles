@@ -1,6 +1,6 @@
 import qualified Codec.Binary.UTF8.String    as UTF8
 import           Control.Monad               (forM_, join)
-import           DBus                        as D
+import qualified DBus                        as D
 import qualified DBus.Client                 as D
 import           Data.Function               (on)
 import           Data.List                   (sortBy)
@@ -30,18 +30,20 @@ import           XMonad.Util.Run             (safeSpawn, spawnPipe)
 import           XMonad.Util.Scratchpad
 import           XMonad.Util.SpawnOnce
 main =  do
-        xmobarProc <- spawnPipe "xmobar -x 0 ~/.xmobarrc"
+        dbus <- D.connectSession
+        D.requestName dbus (D.busName_ "org.xmonad.Log") [D.nameAllowReplacement, D.nameReplaceExisting, D.nameDoNotQueue]
         xmonad $ ewmh $ defaultConfig
               { modMask = mod1Mask
-              , manageHook = myManageHook
+              , manageHook = manageDocks <+> myManageHook
               , terminal = myTerminal
               , borderWidth = 0
               , normalBorderColor = "#e6c363"
               , focusedBorderColor = "#448756"
               , layoutHook = gapLayout $ spacingLayout $ smartBorders $ avoidStruts $ ResizableTall 1 (3/100) (1/2) [] ||| Mirror (ResizableTall 1 (3/100) (1/2) []) ||| ThreeColMid 1 (1/4) (1/3) ||| Full
-              , workspaces = myWorkspaces
+              , workspaces = wsNamesAlt
               , handleEventHook = docksEventHook <+> fullscreenEventHook
               , startupHook = do
+                  spawn "~/.config/polybar/launch.sh"
                   spawnOnce "feh --bg-fill ~/.xmonad/61f73c1fc85e2.png"
                   spawnOnce "picom --experimental-backend &"
                   spawnOnce "redshift &"
@@ -50,7 +52,7 @@ main =  do
                   spawnOnce "fcitx5"
                   spawnOnce "udiskie"
                   setWMName "LG3D"
-              , logHook = xmobarLogHook xmobarProc
+              , logHook = dynamicLogWithPP (myLogHook dbus)
               } `additionalKeys` myKeyBindings
 
 myTerminal = "alacritty"
@@ -58,45 +60,42 @@ myTerminal = "alacritty"
 ppLayoutFormat ('S':'p':'a':'c':'i':'n':'g':' ':s) = s
 ppLayoutFormat s                                   = s
 
-xmobarLogHook xmobarProc = dynamicLogWithPP $ def
-                {
-                  ppOrder = \(ws:l:_:_) -> [l, ws]
-                , ppCurrent = myCurrentWs
-                , ppHidden = myHiddenWs
-                , ppHiddenNoWindows = myHiddenNoWindowsWs
-                , ppOutput = hPutStrLn xmobarProc
-                , ppLayout = xmobarColor "#ee9a00" "" . ppLayoutFormat
-                , ppSep = " | "
-                }
+myLogHook dbus = def { ppOutput = dbusOutput dbus
+                     , ppOrder = \(ws:l:_:_) -> [l, ws]
+                     , ppCurrent = myCurrentWs
+                     , ppHidden = myHiddenWs
+                     , ppHiddenNoWindows = myHiddenNoWindowsWs
+                     , ppWsSep = " "
+                     , ppSep = " "
+                     }
+
+dbusOutput :: D.Client -> String -> IO()
+dbusOutput dbus str = do
+  let signal = (D.signal objectPath interfaceName memberName) {D.signalBody = [D.toVariant $ UTF8.decodeString str]}
+  D.emit dbus signal
+    where
+      objectPath = D.objectPath_ "org/xmonad/Log"
+      interfaceName = D.interfaceName_ "org.xmonad.Log"
+      memberName = D.memberName_ "Update"
 
 eventLogHook = do
-  winset <- gets windowset
-  title <- maybe (return "") (fmap show. getName) . W.peek $ winset
-  let currWs = W.currentTag winset
-  let wss = map W.tag $ W.workspaces winset
-  let wsStr = join $ map (fmt currWs) $ sort' wss
+   winset <- gets windowset
+   title <- maybe (return "") (fmap show. getName) . W.peek $ winset
+   let currWs = W.currentTag winset
+   let wss = map W.tag $ W.workspaces winset
+   let wsStr = join $ map (fmt currWs) $ sort' wss
 
-  io $ appendFile "/tmp/.xmonad-title-log" (title ++ "\n")
-  io $ appendFile "/tmp/.xmonad-workspace-log" (wsStr ++ "\n")
+   io $ appendFile "/tmp/.xmonad-title-log" (title ++ "\n")
+   io $ appendFile "/tmp/.xmonad-workspace-log" (wsStr ++ "\n")
 
-  where fmt currWs ws
-          | currWs == ws = "[" ++ ws ++ "]"
-          | otherwise = " " ++ ws ++ " "
-        sort' = sortBy (compare `on` (!! 0))
-
-xmobarEscape = concatMap doubleLts
-  where doubleLts '<' = "<<"
-        doubleLts x   = [x]
+   where fmt currWs ws
+           | currWs == ws = "[" ++ ws ++ "]"
+           | otherwise = " " ++ ws ++ " "
+         sort' = sortBy (compare `on` (!! 0))
 
 wsNames = ["web", "dev", "chat", "mus", "term", "office", "misc", "game", "pdf"]
 
-wsNamesAlt = ["web", "chat"] ++ map show [3..9]
-
-myWorkspaces = clickable . map xmobarEscape $ wsNamesAlt
-  where
-    clickable l = ["<action=xdotool key alt+"++ show n ++ ">" ++ ws ++ "</action>" |
-      (i, ws) <- zip [1..9] l,
-        let n = i]
+wsNamesAlt = ["W", "C"] ++ map show [3..5]
 
 dmenuCommand = "dmenu -i -nb '#54372d' -nf '#ede0ca' -sb '#c2452f' -sf '#dec5c1' -fn 'Iosevka NF-10'"
 
@@ -136,14 +135,14 @@ myKeyBindings =
 
 spacingLayout = spacingRaw True (Border 0 5 5 5) True (Border 0 5 5 5) True
 
-gapLayout = gaps [(U, 30), (R, 15), (L, 15), (D, 5)]
+gapLayout = gaps [(U, 40), (R, 15), (L, 15), (D, 5)]
 
 myManageHook = (composeAll . concat $
         [ [ className   =? c --> doFloat           | c <- myFloats]
-        , [ className   =? c --> doF (W.shift (head myWorkspaces)) | c <- ["vivaldi-stable"]]
-        , [ className   =? c --> doF (W.shift (myWorkspaces !! 1)) | c <- ["discord"]]
-        , [ className   =? c --> doF (W.shift (myWorkspaces !! 4)) | c <- ["spotify", "vlc", "mpv"]]
-        , [ className   =? c --> doF (W.shift (myWorkspaces !! 9)) | c <- ["zathura"]]
+        , [ className   =? c --> doF (W.shift (head wsNamesAlt)) | c <- ["vivaldi-stable"]]
+        , [ className   =? c --> doF (W.shift (wsNamesAlt !! 1)) | c <- ["discord"]]
+        , [ className   =? c --> doF (W.shift (wsNamesAlt !! 4)) | c <- ["spotify", "vlc", "mpv"]]
+        , [ className   =? c --> doF (W.shift (wsNamesAlt !! 9)) | c <- ["zathura"]]
         ]) <+> namedScratchpadManageHook myScratchPads
         where
                 myFloats = ["confirm", "file_progress", "dialog", "download", "error", "notification", "splash"]
