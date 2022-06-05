@@ -1,7 +1,7 @@
 import qualified Codec.Binary.UTF8.String    as UTF8
 import           Control.Monad               (forM_, join)
-import qualified DBus                        as D
-import qualified DBus.Client                 as D
+--import qualified DBus                        as D
+--import qualified DBus.Client                 as D
 import           Data.Function               (on)
 import           Data.List                   (sortBy)
 import qualified Data.Map                    as M
@@ -30,8 +30,6 @@ import           XMonad.Util.Run             (safeSpawn, spawnPipe)
 import           XMonad.Util.Scratchpad
 import           XMonad.Util.SpawnOnce
 main =  do
-        dbus <- D.connectSession
-        D.requestName dbus (D.busName_ "org.xmonad.Log") [D.nameAllowReplacement, D.nameReplaceExisting, D.nameDoNotQueue]
         xmonad $ ewmh $ defaultConfig
               { modMask = mod1Mask
               , manageHook = manageDocks <+> myManageHook
@@ -52,7 +50,6 @@ main =  do
                   spawnOnce "fcitx5"
                   spawnOnce "udiskie"
                   setWMName "LG3D"
-              , logHook = dynamicLogWithPP (myLogHook dbus)
               } `additionalKeys` myKeyBindings
 
 myTerminal = "alacritty"
@@ -60,44 +57,9 @@ myTerminal = "alacritty"
 ppLayoutFormat ('S':'p':'a':'c':'i':'n':'g':' ':s) = s
 ppLayoutFormat s                                   = s
 
-myLogHook dbus = def { ppOutput = dbusOutput dbus
-                     , ppOrder = \(ws:l:_:_) -> [l, ws]
-                     , ppCurrent = myCurrentWs
-                     , ppHidden = myHiddenWs
-                     , ppHiddenNoWindows = myHiddenNoWindowsWs
-                     , ppWsSep = " "
-                     , ppSep = " "
-                     }
-
-dbusOutput :: D.Client -> String -> IO()
-dbusOutput dbus str = do
-  let signal = (D.signal objectPath interfaceName memberName) {D.signalBody = [D.toVariant $ UTF8.decodeString str]}
-  D.emit dbus signal
-    where
-      objectPath = D.objectPath_ "org/xmonad/Log"
-      interfaceName = D.interfaceName_ "org.xmonad.Log"
-      memberName = D.memberName_ "Update"
-
-eventLogHook = do
-   winset <- gets windowset
-   title <- maybe (return "") (fmap show. getName) . W.peek $ winset
-   let currWs = W.currentTag winset
-   let wss = map W.tag $ W.workspaces winset
-   let wsStr = join $ map (fmt currWs) $ sort' wss
-
-   io $ appendFile "/tmp/.xmonad-title-log" (title ++ "\n")
-   io $ appendFile "/tmp/.xmonad-workspace-log" (wsStr ++ "\n")
-
-   where fmt currWs ws
-           | currWs == ws = "[" ++ ws ++ "]"
-           | otherwise = " " ++ ws ++ " "
-         sort' = sortBy (compare `on` (!! 0))
-
 wsNames = ["web", "dev", "chat", "mus", "term", "office", "misc", "game", "pdf"]
 
 wsNamesAlt = ["W", "C"] ++ map show [3..5]
-
-dmenuCommand = "dmenu -i -nb '#54372d' -nf '#ede0ca' -sb '#c2452f' -sf '#dec5c1' -fn 'Iosevka NF-10'"
 
 myCurrentWs = xmobarColor "#eb4934" "#ebbd34" . wrap " { " " } "
 myHiddenWs = xmobarColor "#668a4c" "#b5ae45" . wrap " [" "] "
@@ -116,7 +78,6 @@ myKeyBindings =
         , ((mod1Mask, xK_Print), spawn "spectacle")
         , ((mod1Mask, xK_i), sendMessage MirrorShrink)
         , ((mod1Mask, xK_u), sendMessage MirrorExpand)
-        , ((mod1Mask .|. controlMask, xK_Print), spawn "scrot window_%Y-%m-%d-%H-%M-%S.png -d 1-u")
         , ((0, 0x1008ff12), spawn "amixer set Master toggle")
         , ((0, 0x1008ff11), spawn "amixer -q sset Master 2%-")
         , ((0, 0x1008ff13), spawn "amixer -q sset Master 2%+")

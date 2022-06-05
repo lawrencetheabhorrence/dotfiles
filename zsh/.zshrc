@@ -6,7 +6,7 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
 fi
 
 # If you come from bash you might have to change your $PATH.
-export PATH=$HOME/bin:/usr/local/bin:$HOME/.local/bin:/opt/resolve/bin:$PATH
+export PATH=$HOME/bin:/usr/local/bin:$HOME/.local/bin:/opt/resolve/bin:$HOME/.ghcup/bin:$HOME/anaconda3/lib/python3.9/site-packages:$PATH
 
 # Path to your oh-my-zsh installation.
 export ZSH="/home/laurents/.oh-my-zsh"
@@ -141,9 +141,30 @@ eval "$(pyenv init -)"
 eval "$(zoxide init zsh)"
 alias topdf='jupyter nbconvert --to webpdf --no-input'
 alias cleanattendee='sed "1,/^Attendee Details,$/d"'
+alias passupdate='pass git add . && pass git commit -m "update" && pass git push origin main'
 function getpanelists () {
   tac $1 | sed "1,/^Attendee Details,$/d" | tac | sed "1,/^Panelist Details,$/d"
 }
 export QT_STYLE_OVERRIDE=kvantum
-gsettings set org.gnome.desktop.interface gtk-theme "Ant"
-gsettings set org.gnome.desktop.wm.preferences theme "Ant"
+gsettings set org.gnome.desktop.interface gtk-theme "Otis-forest"
+gsettings set org.gnome.desktop.wm.preferences theme "Otis-forest"
+
+TIMEFMT=$'\n================\nCPU\t%P\nuser\t%*U\nsystem\t%*S\ntotal\t%*E'
+
+export PASSWORD_STORE_GPG_OPTS='--no-throw-keyids'
+export EDITOR=nvim
+
+p () {
+    open=xdg-open   # this will open pdf file withthe default PDF viewer on KDE, xfce, LXDE and perhaps on other desktops.
+
+    ag -U -g ".pdf$" \
+    | fast-p \
+    | fzf --read0 --reverse -e -d $'\t'  \
+        --preview-window down:80% --preview '
+            v=$(echo {q} | tr " " "|"); 
+            echo -e {1}"\n"{2} | grep -E "^|$v" -i --color=always;
+        ' \
+    | cut -z -f 1 -d $'\t' | tr -d '\n' | xargs -r --null $open > /dev/null 2> /dev/null
+}
+
+source ~/.bash_profile
