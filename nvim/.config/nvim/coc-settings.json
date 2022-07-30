@@ -9,20 +9,14 @@
   "python.pythonPath": "~/condapath.sh",
   "languageserver": {
     "haskell": {
-      "command": "haskell-language-server-wrapper-1.7.0.0",
-      "args": [
-        "--lsp",
-        "--logfile=~/.hls"
-      ],
+      "command": "haskell-language-server-wrapper",
+      "args": ["--lsp"],
       "rootPatterns": [
         ".stack.yaml",
         ".hie-bios",
         "BUILD.bazel",
         "cabal.config",
-        "package.yaml",
-        "*.cabal",
-        "cabal.project",
-        "hie.yaml"
+        "package.yaml"
       ],
       "filetypes": [
         "hs",
@@ -31,5 +25,6 @@
       ],
       "formattingProvider": "stylish-haskell"
     }
-  }
+  },
+  "svelte.enable-ts-plugin": true
 }

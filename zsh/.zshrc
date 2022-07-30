@@ -168,3 +168,4 @@ p () {
 }
 
 source ~/.bash_profile
+export PATH=~/.npm-global/bin:$PATH

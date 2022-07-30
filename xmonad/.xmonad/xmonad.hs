@@ -9,6 +9,7 @@ import           Data.Maybe                  (isJust)
 import           System.IO
 import           XMonad
 import           XMonad.Actions.CycleWS
+import XMonad.Config.Desktop
 import           XMonad.Actions.SpawnOn
 import           XMonad.Hooks.DynamicLog
 import           XMonad.Hooks.EwmhDesktops
@@ -30,7 +31,7 @@ import           XMonad.Util.Run             (safeSpawn, spawnPipe)
 import           XMonad.Util.Scratchpad
 import           XMonad.Util.SpawnOnce
 main =  do
-        xmonad $ ewmh $ defaultConfig
+        xmonad $ ewmh $ ewmhFullscreen $ docks $ desktopConfig
               { modMask = mod1Mask
               , manageHook = manageDocks <+> myManageHook
               , terminal = myTerminal
@@ -39,13 +40,12 @@ main =  do
               , focusedBorderColor = "#448756"
               , layoutHook = gapLayout $ spacingLayout $ smartBorders $ avoidStruts $ ResizableTall 1 (3/100) (1/2) [] ||| Mirror (ResizableTall 1 (3/100) (1/2) []) ||| ThreeColMid 1 (1/4) (1/3) ||| Full
               , workspaces = wsNamesAlt
-              , handleEventHook = docksEventHook <+> fullscreenEventHook
               , startupHook = do
                   spawn "~/.config/polybar/launch.sh"
                   spawnOnce "feh --bg-fill ~/.xmonad/61f73c1fc85e2.png"
                   spawnOnce "picom --experimental-backend &"
                   spawnOnce "redshift &"
-                  spawnOnce "vivaldi-stable &"
+                  spawnOnce "firefox-developer-edition &"
                   spawnOnce "discord &"
                   spawnOnce "fcitx5"
                   spawnOnce "udiskie"
@@ -70,11 +70,11 @@ myKeyBindings =
         , ((mod1Mask, xK_p), spawn "rofi-pass")
         , ((mod1Mask, xK_s), spawn "slock")
         , ((mod1Mask, xK_c), scratchpadSpawnActionTerminal "alacritty -t nvim ~/PriorityChecklist.org")
-        , ((mod1Mask, xK_Tab), moveTo Next NonEmptyWS)
-        , ((mod1Mask .|. shiftMask, xK_Tab), moveTo Prev NonEmptyWS)
-        , ((mod1Mask .|. controlMask, xK_Tab), shiftTo Next EmptyWS)
+        , ((mod1Mask, xK_Tab), moveTo Next (Not emptyWS))
+        , ((mod1Mask .|. shiftMask, xK_Tab), moveTo Prev (Not emptyWS))
+        , ((mod1Mask .|. controlMask, xK_Tab), shiftTo Next emptyWS)
         , ((mod1Mask .|. controlMask, xK_g), sendMessage ToggleGaps)
-        , ((mod1Mask .|. shiftMask, xK_n), moveTo Next EmptyWS)
+        , ((mod1Mask .|. shiftMask, xK_n), moveTo Next emptyWS)
         , ((mod1Mask, xK_Print), spawn "spectacle")
         , ((mod1Mask, xK_i), sendMessage MirrorShrink)
         , ((mod1Mask, xK_u), sendMessage MirrorExpand)
@@ -96,11 +96,11 @@ myKeyBindings =
 
 spacingLayout = spacingRaw True (Border 0 5 5 5) True (Border 0 5 5 5) True
 
-gapLayout = gaps [(U, 40), (R, 15), (L, 15), (D, 5)]
+gapLayout = gaps [(U, 40), (R, 5), (L, 5), (D, 5)]
 
 myManageHook = (composeAll . concat $
         [ [ className   =? c --> doFloat           | c <- myFloats]
-        , [ className   =? c --> doF (W.shift (head wsNamesAlt)) | c <- ["vivaldi-stable"]]
+        , [ className   =? c --> doF (W.shift (head wsNamesAlt)) | c <- ["firefox-developer-edition"]]
         , [ className   =? c --> doF (W.shift (wsNamesAlt !! 1)) | c <- ["discord"]]
         , [ className   =? c --> doF (W.shift (wsNamesAlt !! 4)) | c <- ["spotify", "vlc", "mpv"]]
         , [ className   =? c --> doF (W.shift (wsNamesAlt !! 9)) | c <- ["zathura"]]
